@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: gitops-audit-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gitops_audit
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  watcher:
+    build: .
+    container_name: gitops-audit-watcher
+    command: gitops-audit watcher
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:password@postgres:5432/gitops_audit
+      PROMETHEUS_URL: ${PROMETHEUS_URL:-http://localhost:9090}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - ${HOME}/.kube:/home/gitops/.kube:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api:
+    build: .
+    container_name: gitops-audit-api
+    command: gitops-audit api --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:password@postgres:5432/gitops_audit
+      PROMETHEUS_URL: ${PROMETHEUS_URL:-http://localhost:9090}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

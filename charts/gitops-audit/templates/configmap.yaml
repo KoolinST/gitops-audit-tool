@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  PROMETHEUS_URL: {{ .Values.config.prometheusUrl | quote }}
+  ARGOCD_URL: {{ .Values.config.argocdUrl | quote }}
