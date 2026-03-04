@@ -1,0 +1,49 @@
+# Default values for gitops-audit
+
+image:
+  repository: gitops-audit
+  tag: latest
+  pullPolicy: IfNotPresent
+
+watcher:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+api:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+service:
+  type: ClusterIP
+  port: 8000
+
+config:
+  logLevel: INFO
+  prometheusUrl: "http://prometheus-operated:9090"
+  argocdUrl: "http://argocd-server.argocd.svc.cluster.local"
+
+secrets:
+  githubToken: ""
+  slackWebhookUrl: ""
+  databaseUrl: "postgresql+asyncpg://postgres:password@postgres:5432/gitops_audit"
+
+serviceAccount:
+  create: true
+  name: gitops-audit
+
+argocd:
+  namespace: argocd

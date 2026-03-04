@@ -1,0 +1,22 @@
+# Example values for deploying to a real cluster
+# Copy this file and fill in your values:
+# helm install gitops-audit ./charts/gitops-audit -f values-production.yaml
+
+image:
+  repository: your-registry/gitops-audit
+  tag: "0.1.0"
+  pullPolicy: Always
+
+config:
+  logLevel: INFO
+  prometheusUrl: "http://prometheus-operated.monitoring:9090"
+  argocdUrl: "http://argocd-server.argocd.svc.cluster.local"
+
+secrets:
+  databaseUrl: "postgresql+asyncpg://user:password@postgres-host:5432/gitops_audit"
+  githubToken: "your-github-token"
+  slackWebhookUrl: "https://hooks.slack.com/services/your/webhook"
+
+service:
+  type: ClusterIP
+  port: 8000
