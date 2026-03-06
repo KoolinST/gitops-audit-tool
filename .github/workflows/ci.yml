@@ -46,7 +46,7 @@ jobs:
         run: pip install poetry==1.8.2
 
       - name: Install dependencies
-        run: poetry lock --no-update && poetry install --no-root && poetry run pip install -e .
+        run: poetry lock --no-update && poetry install --no-root && 
 
       - name: Debug
         run: |
