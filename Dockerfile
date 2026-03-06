@@ -1,8 +1,6 @@
 FROM python:3.11-slim
-
 WORKDIR /app
 
-# Install kubectl for rollback command
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
@@ -12,11 +10,9 @@ RUN apt-get update && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy everything needed
 COPY pyproject.toml README.md ./
 COPY src/ ./src/
 
-# Install dependencies directly with pip
 RUN pip install --upgrade pip && \
     pip install \
     typer \
@@ -34,11 +30,11 @@ RUN pip install --upgrade pip && \
     structlog \
     prometheus-client \
     psycopg2-binary \
-    greenlet && \
-    pip install . --no-deps
+    greenlet
 
-# Non-root user for security
+ENV PYTHONPATH=/app/src
+
 RUN useradd --create-home --shell /bin/bash gitops
 USER gitops
 
-CMD ["gitops-audit", "watcher"]
+CMD ["python", "-m", "gitops_audit.cli.main"]
