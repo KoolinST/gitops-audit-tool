@@ -1,12 +1,12 @@
 # GitOps Audit Trail & Rollback System
-
 > Automated deployment tracking, metrics correlation, and one-command rollback for Kubernetes/ArgoCD environments.
 
+[![CI](https://github.com/KoolinST/gitops-audit-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/KoolinST/gitops-audit-tool/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://postgresql.org)
 [![ArgoCD](https://img.shields.io/badge/ArgoCD-2.x-orange.svg)](https://argoproj.github.io/argo-cd/)
 [![Helm](https://img.shields.io/badge/Helm-3.x-blue.svg)](https://helm.sh)
-[![CI](https://github.com/KoolinST/gitops-audit-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/KoolinST/gitops-audit-tool/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
@@ -52,6 +52,7 @@ When a GitOps deployment causes a production incident, engineers face:
 - **GitHub integration** — enriches deployments with commit author, message, and PR approval info
 - **REST API** — FastAPI server with Swagger docs for programmatic access
 - **Full audit trail** — every deployment, rollback, and metric snapshot stored in PostgreSQL
+- **CI/CD pipeline** — GitHub Actions runs tests, builds Docker image, and pushes to Docker Hub on every merge
 
 ---
 
@@ -67,8 +68,8 @@ When a GitOps deployment causes a production incident, engineers face:
 
 ### Local Development
 ```bash
-git clone https://github.com/KoolinST/gitops-audit
-cd gitops-audit
+git clone https://github.com/KoolinST/gitops-audit-tool
+cd gitops-audit-tool
 
 # Install dependencies
 poetry install
@@ -91,7 +92,6 @@ poetry run gitops-audit api
 
 ### Deploy to Kubernetes with Helm
 ```bash
-# Install into your cluster
 helm install gitops-audit ./charts/gitops-audit \
   --namespace gitops-audit \
   --create-namespace \
@@ -108,8 +108,6 @@ kubectl port-forward svc/gitops-audit-api 8000:8000 -n gitops-audit
 ```
 
 ### Environment Variables
-
-Create a `.env` file from the example:
 ```env
 DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/gitops_audit
 PROMETHEUS_URL=http://localhost:9090
@@ -126,6 +124,7 @@ LOG_LEVEL=INFO
 ```bash
 poetry run gitops-audit watcher
 ```
+
 Watches ArgoCD for sync events, captures metrics, detects anomalies, and sends Slack alerts.
 
 ---
@@ -248,6 +247,30 @@ Start the API server and open `http://localhost:8000/docs` for interactive Swagg
 
 ---
 
+## CI/CD
+
+The pipeline runs automatically on every push to `main` and on all pull requests.
+```
+Push to main / Pull Request
+         │
+         V
+    ┌─────────┐
+    │  test   │  spin up PostgreSQL -> install deps -> migrate -> pytest (26 tests)
+    └────┬────┘
+         │ passes
+         V
+    ┌─────────┐
+    │  build  │  docker build -> push to Docker Hub (only on main)
+    └─────────┘
+```
+
+The Docker image is published to Docker Hub on every merge to `main`:
+```bash
+docker pull koolinst/gitops-audit:latest
+```
+
+---
+
 ## Architecture
 
 ### Components
@@ -278,7 +301,7 @@ rollbacks         -- Rollback history with reason and success status
 ### Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|------------|
 | Language | Python 3.11+ |
 | CLI | Typer + Rich |
 | API | FastAPI + uvicorn |
@@ -287,6 +310,8 @@ rollbacks         -- Rollback history with reason and success status
 | Migrations | Alembic |
 | Kubernetes | Kind + ArgoCD |
 | Packaging | Helm 3 |
+| CI/CD | GitHub Actions |
+| Container Registry | Docker Hub |
 | Metrics | Prometheus + cAdvisor |
 | Git | GitHub API (PyGithub) |
 | Alerts | Slack Incoming Webhooks |
@@ -298,6 +323,9 @@ rollbacks         -- Rollback history with reason and success status
 ## Project Structure
 ```
 gitops-audit/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                    # CI/CD pipeline
 ├── src/
 │   └── gitops_audit/
 │       ├── analysis/
@@ -368,7 +396,6 @@ poetry run mypy src
 ## Roadmap
 
 - [ ] `gitops-audit doctor` — verify connectivity to Prometheus, ArgoCD, and DB
-- [ ] GitHub Actions CI pipeline
 - [ ] PagerDuty integration
 
 ---
