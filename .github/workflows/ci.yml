@@ -46,12 +46,7 @@ jobs:
         run: pip install poetry==1.8.2
 
       - name: Install dependencies
-        run: poetry lock --no-update && poetry install --no-root && 
-
-      - name: Debug
-        run: |
-          poetry run pip list
-          poetry env info
+        run: poetry lock --no-update && poetry install --no-root
 
       - name: Run migrations
         run: poetry run python -m alembic upgrade head
