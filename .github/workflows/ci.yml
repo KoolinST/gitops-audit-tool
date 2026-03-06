@@ -47,6 +47,11 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
+      - name: Debug
+        run: |
+          poetry run pip list
+          poetry env info
+
       - name: Run migrations
         run: poetry run python -m alembic upgrade head
 
