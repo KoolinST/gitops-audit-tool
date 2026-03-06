@@ -64,3 +64,6 @@ mypy_path = "src"
 pythonpath = ["src"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.poetry]
+package-mode = false
