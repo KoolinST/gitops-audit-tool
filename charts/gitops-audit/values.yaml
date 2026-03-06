@@ -1,7 +1,7 @@
 # Default values for gitops-audit
 
 image:
-  repository: gitops-audit
+  repository: koolinst/gitops-audit
   tag: latest
   pullPolicy: IfNotPresent
 
