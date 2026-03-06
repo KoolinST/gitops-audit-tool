@@ -6,7 +6,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue.svg)](https://postgresql.org)
 [![ArgoCD](https://img.shields.io/badge/ArgoCD-2.x-orange.svg)](https://argoproj.github.io/argo-cd/)
 [![Helm](https://img.shields.io/badge/Helm-3.x-blue.svg)](https://helm.sh)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/KoolinST/gitops-audit-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/KoolinST/gitops-audit-tool/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
