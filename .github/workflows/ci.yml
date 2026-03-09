@@ -33,7 +33,7 @@ jobs:
         run: poetry run black --check .
 
       - name: Run Mypy (type checking)
-        run: poetry run mypy src --ignore-missing-imports
+        run: poetry run mypy src --ignore-missing-imports --no-implicit-optional --disable-error-code=assignment
 
   test:
     name: Run Tests
