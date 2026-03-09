@@ -52,7 +52,7 @@ def watcher():
     configure_logging(settings.log_level)
 
     typer.echo("Starting GitOps Audit watcher...")
-    typer.echo(f"Monitoring ArgoCD applications in namespace: argocd")
+    typer.echo("Monitoring ArgoCD applications in namespace: argocd")
     typer.echo(f"Database: {sanitize_database_url(settings.database_url)}")
     typer.echo("Press Ctrl+C to stop...")
 

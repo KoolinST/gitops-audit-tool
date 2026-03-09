@@ -1,7 +1,6 @@
 """GitHub API integration for fetching commit and PR metadata."""
 
 from typing import Optional, Dict, Any
-from datetime import datetime
 import structlog
 from github import Github, GithubException
 

@@ -12,7 +12,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from gitops_audit.database.models import Base
+from gitops_audit.database.models import Base  # noqa: E402  # noqa: E402
 target_metadata = Base.metadata
 
 def get_url():

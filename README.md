@@ -52,7 +52,7 @@ When a GitOps deployment causes a production incident, engineers face:
 - **GitHub integration** — enriches deployments with commit author, message, and PR approval info
 - **REST API** — FastAPI server with Swagger docs for programmatic access
 - **Full audit trail** — every deployment, rollback, and metric snapshot stored in PostgreSQL
-- **CI/CD pipeline** — GitHub Actions runs tests, builds Docker image, and pushes to Docker Hub on every merge
+- **CI/CD pipeline** — GitHub Actions runs lint, tests, builds Docker image, and deploys via ArgoCD GitOps on every merge
 
 ---
 
@@ -250,17 +250,24 @@ Start the API server and open `http://localhost:8000/docs` for interactive Swagg
 ## CI/CD
 
 The pipeline runs automatically on every push to `main` and on all pull requests.
+
 ```
 Push to main / Pull Request
          │
-         V
-    ┌─────────┐
-    │  test   │  spin up PostgreSQL -> install deps -> migrate -> pytest (26 tests)
+    ┌────┴────┐
+    │  lint   │  ruff + black + mypy (parallel with test)
     └────┬────┘
-         │ passes
+    ┌────┴────┐
+    │  test   │  postgres → migrate → pytest (26 tests) + coverage
+    └────┬────┘
+         │ both pass
          V
     ┌─────────┐
-    │  build  │  docker build -> push to Docker Hub (only on main)
+    │  build  │  docker build → push :latest + :sha (main only)
+    └────┬────┘
+         V
+    ┌─────────┐
+    │ deploy  │  update values.yaml → ArgoCD auto-syncs
     └─────────┘
 ```
 
@@ -268,6 +275,62 @@ The Docker image is published to Docker Hub on every merge to `main`:
 ```bash
 docker pull koolinst/gitops-audit:latest
 ```
+
+---
+
+## AWS Infrastructure
+
+The `terraform/` directory provisions a production-ready AWS environment using Terraform.
+
+### Architecture
+```
+┌─────────────────────────────────────────┐
+│              AWS (eu-central-1)          │
+│                                          │
+│   ┌─────────────────────────────────┐   │
+│   │         VPC 10.0.0.0/16          │   │
+│   │                                  │   │
+│   │  ┌──────────────┐ ┌───────────┐  │   │
+│   │  │ Private Sub  │ │ Public Sub│  │   │
+│   │  │ 10.0.1.0/24  │ │10.0.101.. │  │   │
+│   │  │ 10.0.2.0/24  │ │10.0.102.. │  │   │
+│   │  └──────┬───────┘ └─────┬─────┘  │   │
+│   │         │               │        │   │
+│   │  ┌──────▼───────┐ ┌────▼──────┐  │   │
+│   │  │  EKS v1.29   │ │    NAT    │  │   │
+│   │  │  t3.small    │ │  Gateway  │  │   │
+│   │  └──────────────┘ └───────────┘  │   │
+│   └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+```
+
+### Resources Provisioned
+
+| Resource | Details |
+|----------|---------|
+| VPC | 10.0.0.0/16, 2 AZs (eu-central-1a/b) |
+| Subnets | 2 private (EKS nodes), 2 public (NAT) |
+| EKS Cluster | v1.29, KMS-encrypted secrets |
+| Node Group | t3.small, autoscaling 1–2 nodes |
+| NAT Gateway | Single, for private subnet egress |
+| KMS Key | Envelope encryption for Kubernetes secrets |
+| CloudWatch | 90-day log retention |
+
+### Deploy
+```bash
+cd terraform
+terraform init
+terraform apply -var='db_password=your_password'
+aws eks update-kubeconfig --region eu-central-1 --name gitops-audit
+kubectl get nodes
+```
+
+### Destroy
+```bash
+terraform destroy -var='db_password=your_password'
+```
+
+> Infrastructure is designed to be ephemeral — spin up for demos, destroy immediately after to avoid charges
 
 ---
 
@@ -312,6 +375,7 @@ rollbacks         -- Rollback history with reason and success status
 | Packaging | Helm 3 |
 | CI/CD | GitHub Actions |
 | Container Registry | Docker Hub |
+| Infrastructure | Terraform + AWS EKS |
 | Metrics | Prometheus + cAdvisor |
 | Git | GitHub API (PyGithub) |
 | Alerts | Slack Incoming Webhooks |
@@ -366,6 +430,10 @@ gitops-audit/
 │           ├── secret.yaml
 │           ├── serviceaccount.yaml
 │           └── rbac.yaml
+├── terraform/                        # AWS infrastructure
+│   ├── main.tf                       # VPC, EKS, KMS, CloudWatch
+│   ├── variables.tf
+│   └── outputs.tf
 ├── alembic/                          # Database migrations
 ├── tests/
 │   ├── test_database.py
@@ -397,6 +465,7 @@ poetry run mypy src
 
 - [ ] `gitops-audit doctor` — verify connectivity to Prometheus, ArgoCD, and DB
 - [ ] PagerDuty integration
+- [ ] Helm chart published to GitHub Pages registry
 
 ---
 

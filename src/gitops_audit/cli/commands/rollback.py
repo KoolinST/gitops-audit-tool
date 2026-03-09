@@ -8,7 +8,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich import box
-from sqlalchemy import select
 
 from gitops_audit.database.connection import AsyncSessionLocal
 from gitops_audit.database.queries import get_deployment_by_id

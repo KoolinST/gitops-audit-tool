@@ -1,7 +1,7 @@
 """Prometheus integration for querying metrics."""
 
-from typing import Optional, Dict, List, Any
-from datetime import datetime, timedelta
+from typing import Optional, Dict, Any
+from datetime import datetime
 import structlog
 import httpx
 
