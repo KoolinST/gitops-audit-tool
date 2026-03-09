@@ -55,9 +55,9 @@ class SlackClient:
         severity_label = severity.upper()
         header = f"[{severity_label}] Deployment Issue: {app_name}"
 
-        issues_text = "\n".join(
-            f"• {issue['message']}" for issue in issues
-        ) if issues else "Unknown issue"
+        issues_text = (
+            "\n".join(f"• {issue['message']}" for issue in issues) if issues else "Unknown issue"
+        )
 
         metrics_lines = []
         if cpu_before is not None and cpu_after is not None:
@@ -108,7 +108,7 @@ class SlackClient:
                                 "text": (
                                     f"*To rollback:*\n"
                                     f"`gitops-audit rollback {deployment_id} "
-                                    f"--reason \"Auto-detected {severity}\"`"
+                                    f'--reason "Auto-detected {severity}"`'
                                 ),
                             },
                         },
@@ -163,7 +163,10 @@ class SlackClient:
                                 {"type": "mrkdwn", "text": f"*App:*\n{app_name}"},
                                 {"type": "mrkdwn", "text": f"*Namespace:*\n{namespace}"},
                                 {"type": "mrkdwn", "text": f"*Commit:*\n`{commit_sha[:8]}`"},
-                                {"type": "mrkdwn", "text": f"*Deployed By:*\n{deployed_by or 'unknown'}"},
+                                {
+                                    "type": "mrkdwn",
+                                    "text": f"*Deployed By:*\n{deployed_by or 'unknown'}",
+                                },
                             ],
                         },
                         {

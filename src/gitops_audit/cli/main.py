@@ -40,7 +40,7 @@ def sanitize_database_url(url: str) -> str:
     try:
         parsed = urlparse(url)
         port = f":{parsed.port}" if parsed.port else ""
-        path = parsed.path.lstrip('/') if parsed.path else ""
+        path = parsed.path.lstrip("/") if parsed.path else ""
         return f"{parsed.hostname}{port}/{path}" if path else f"{parsed.hostname}{port}"
     except Exception:
         return "configured"

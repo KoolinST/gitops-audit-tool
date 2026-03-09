@@ -22,7 +22,7 @@ async def show_history_async(app_name: Optional[str], limit: int):
         else:
             deployments = await get_all_deployments(session, limit)
             title = "All Deployments"
-        
+
         if not deployments:
             if app_name:
                 console.print(f"[yellow]No deployments found for app: {app_name}[/yellow]")
@@ -36,7 +36,7 @@ async def show_history_async(app_name: Optional[str], limit: int):
             show_header=True,
             header_style="bold cyan",
         )
-        
+
         table.add_column("ID", style="dim", width=6)
         table.add_column("App Name", style="magenta")
         table.add_column("Deployed At", style="green")
@@ -53,16 +53,13 @@ async def show_history_async(app_name: Optional[str], limit: int):
         }
 
         for dep in deployments:
-            symbol, color = health_formats.get(
-                dep.health_status, 
-                ("[dim]?[/dim]", "dim")
-            )
+            symbol, color = health_formats.get(dep.health_status, ("[dim]?[/dim]", "dim"))
             status_text = dep.health_status or "Unknown"
             health_display = f"{symbol} [{color}]{status_text}[/{color}]"
 
             commit_short = dep.commit_sha[:8] if dep.commit_sha else "unknown"
             deployed_at = dep.deployed_at.strftime("%Y-%m-%d %H:%M:%S")
-            
+
             table.add_row(
                 str(dep.id),
                 dep.app_name,
@@ -70,7 +67,7 @@ async def show_history_async(app_name: Optional[str], limit: int):
                 commit_short,
                 health_display,
             )
-        
+
         console.print()
         console.print(table)
         console.print()
@@ -78,15 +75,8 @@ async def show_history_async(app_name: Optional[str], limit: int):
 
 
 def history_command(
-    app_name: Optional[str] = typer.Argument(
-        None,
-        help="Application name to filter by (optional)"
-    ),
-    limit: int = typer.Option(
-        10,
-        "--limit", "-l",
-        help="Maximum number of deployments to show"
-    ),
+    app_name: Optional[str] = typer.Argument(None, help="Application name to filter by (optional)"),
+    limit: int = typer.Option(10, "--limit", "-l", help="Maximum number of deployments to show"),
 ):
     """View deployment history."""
     asyncio.run(show_history_async(app_name, limit))

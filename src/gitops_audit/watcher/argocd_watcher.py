@@ -17,7 +17,7 @@ logger = structlog.get_logger()
 
 class ArgoCDWatcher:
     """Watches ArgoCD Application CRDs for deployment events."""
-    
+
     def __init__(self):
         """Initialize the watcher."""
         try:
@@ -26,7 +26,7 @@ class ArgoCDWatcher:
         except config.ConfigException:
             config.load_kube_config()
             logger.info("loaded_kubernetes_config", type="local")
-        
+
         self.custom_api = client.CustomObjectsApi()
         self.group = "argoproj.io"
         self.version = "v1alpha1"
@@ -36,13 +36,13 @@ class ArgoCDWatcher:
         self.prometheus_client = get_prometheus_client()
         self.slack_client = get_slack_client()
         self._processing_locks: dict = {}
-    
+
     async def watch_applications(self):
         """Watch for ArgoCD Application events."""
         logger.info("starting_argocd_watcher", namespace=self.namespace)
-        
+
         w = watch.Watch()
-        
+
         try:
             for event in w.stream(
                 self.custom_api.list_namespaced_custom_object,
@@ -54,9 +54,9 @@ class ArgoCDWatcher:
             ):
                 event_type = event["type"]
                 app = event["object"]
-                
+
                 app_name = app["metadata"]["name"]
-                
+
                 logger.debug(
                     "argocd_event_detected",
                     event_type=event_type,
@@ -65,17 +65,17 @@ class ArgoCDWatcher:
 
                 if event_type in ["ADDED", "MODIFIED"]:
                     await self._handle_application(app)
-        
+
         except Exception as e:
             logger.error("watcher_error", error=str(e), error_type=type(e).__name__)
             raise
-    
+
     async def _handle_application(self, app: dict):
         """Process an ArgoCD Application resource."""
         metadata = app["metadata"]
         status = app.get("status", {})
         spec = app.get("spec", {})
-        
+
         app_name = metadata["name"]
         if app_name not in self._processing_locks:
             self._processing_locks[app_name] = asyncio.Lock()
@@ -139,21 +139,13 @@ class ArgoCDWatcher:
                 )
 
                 if before_metrics and deployment_id:
-                    await self._store_metrics_snapshot(
-                        deployment_id,
-                        "before",
-                        before_metrics
-                    )
+                    await self._store_metrics_snapshot(deployment_id, "before", before_metrics)
 
                 await asyncio.sleep(30)
 
                 after_metrics = await self._capture_metrics(app_name, dest_namespace)
                 if after_metrics and deployment_id:
-                    await self._store_metrics_snapshot(
-                        deployment_id,
-                        "after",
-                        after_metrics
-                    )
+                    await self._store_metrics_snapshot(deployment_id, "after", after_metrics)
 
                 await self._analyze_and_alert(
                     deployment_id=deployment_id,
@@ -162,12 +154,12 @@ class ArgoCDWatcher:
                     dest_namespace=dest_namespace,
                     commit_info=commit_info,
                 )
-    
+
     async def _is_duplicate_deployment(self, app_name: str, revision: str) -> bool:
         """Check if this deployment was already recorded."""
         if not revision:
             return False
-        
+
         async with AsyncSessionLocal() as session:
             from sqlalchemy import select
 
@@ -178,12 +170,12 @@ class ArgoCDWatcher:
                 .limit(1)
             )
             last_deployment = result.scalar_one_or_none()
-            
+
             if last_deployment and last_deployment.commit_sha == revision[:40]:
                 return True
-        
+
         return False
-    
+
     async def _capture_metrics(self, app_name: str, namespace: str) -> dict:
         """Capture current metrics for an app."""
         try:
@@ -199,21 +191,14 @@ class ArgoCDWatcher:
             logger.error("metrics_capture_failed", app_name=app_name, error=str(e))
             return {}
 
-    async def _fetch_git_metadata(
-        self,
-        git_url: str,
-        commit_sha: str
-    ) -> tuple:
+    async def _fetch_git_metadata(self, git_url: str, commit_sha: str) -> tuple:
         """Fetch commit and PR info from GitHub (async wrapper)."""
         if not git_url or not commit_sha:
             return None, None
 
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(
-            None,
-            self.github_client.get_commit_and_pr_info,
-            git_url,
-            commit_sha
+            None, self.github_client.get_commit_and_pr_info, git_url, commit_sha
         )
 
     async def _record_deployment(
@@ -243,11 +228,11 @@ class ArgoCDWatcher:
                 health_status=health_status,
                 argocd_revision=argocd_revision,
             )
-            
+
             session.add(deployment)
             await session.commit()
             await session.refresh(deployment)
-            
+
             logger.info(
                 "deployment_recorded",
                 deployment_id=deployment.id,
@@ -255,16 +240,14 @@ class ArgoCDWatcher:
                 commit_sha=commit_sha[:8],
                 has_git_metadata=commit_info is not None,
             )
-            
+
             return deployment.id
 
     async def _record_git_commit(self, session, commit_info: dict, pr_info: dict = None):
         """Record or update Git commit metadata."""
         from sqlalchemy import select
 
-        result = await session.execute(
-            select(GitCommit).where(GitCommit.sha == commit_info["sha"])
-        )
+        result = await session.execute(select(GitCommit).where(GitCommit.sha == commit_info["sha"]))
         existing = result.scalar_one_or_none()
 
         if existing:
@@ -274,9 +257,9 @@ class ArgoCDWatcher:
                 existing.pr_url = pr_info.get("url")
         else:
             committed_at = commit_info["committed_at"]
-            if hasattr(committed_at, 'tzinfo') and committed_at.tzinfo is not None:
+            if hasattr(committed_at, "tzinfo") and committed_at.tzinfo is not None:
                 committed_at = committed_at.replace(tzinfo=None)
-            
+
             git_commit = GitCommit(
                 sha=commit_info["sha"],
                 author=commit_info["author"],
@@ -290,13 +273,8 @@ class ArgoCDWatcher:
             session.add(git_commit)
 
         await session.commit()
-    
-    async def _store_metrics_snapshot(
-        self,
-        deployment_id: int,
-        snapshot_type: str,
-        metrics: dict
-    ):
+
+    async def _store_metrics_snapshot(self, deployment_id: int, snapshot_type: str, metrics: dict):
         """Store metrics snapshot in database."""
         async with AsyncSessionLocal() as session:
             snapshot = MetricsSnapshot(
@@ -311,17 +289,17 @@ class ArgoCDWatcher:
                 cpu_usage=metrics.get("cpu_usage"),
                 memory_usage=metrics.get("memory_usage"),
             )
-            
+
             session.add(snapshot)
             await session.commit()
 
     async def _analyze_and_alert(
-            self,
-            deployment_id: int,
-            app_name: str,
-            commit_sha: str,
-            dest_namespace: str,
-            commit_info: dict = None,
+        self,
+        deployment_id: int,
+        app_name: str,
+        commit_sha: str,
+        dest_namespace: str,
+        commit_info: dict = None,
     ):
         """Analyze deployment metrics and send Slack alert if needed."""
         try:
@@ -363,9 +341,9 @@ async def main():
     """Main entry point for watcher."""
     from gitops_audit.config.logging import configure_logging
     from gitops_audit.config.settings import settings
-    
+
     configure_logging(settings.log_level)
-    
+
     watcher = ArgoCDWatcher()
     await watcher.watch_applications()
 

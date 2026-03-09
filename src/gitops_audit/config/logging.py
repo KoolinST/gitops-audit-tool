@@ -9,7 +9,7 @@ def configure_logging(log_level: str = "INFO"):
         processors=[
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
-            structlog.dev.ConsoleRenderer()
+            structlog.dev.ConsoleRenderer(),
         ],
         context_class=dict,
         logger_factory=structlog.PrintLoggerFactory(),

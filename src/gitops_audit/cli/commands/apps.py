@@ -42,7 +42,9 @@ async def list_apps_async():
         table.add_column("Last Deployed", style="yellow")
 
         for row in rows:
-            last_deployed = row.last_deployed.strftime("%Y-%m-%d %H:%M") if row.last_deployed else "Never"
+            last_deployed = (
+                row.last_deployed.strftime("%Y-%m-%d %H:%M") if row.last_deployed else "Never"
+            )
             table.add_row(
                 row.app_name,
                 str(row.total),

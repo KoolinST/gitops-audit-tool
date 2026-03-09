@@ -19,7 +19,7 @@ async def show_deployment_async(deployment_id: int):
     """Async function to fetch and display deployment details."""
     async with AsyncSessionLocal() as session:
         deployment = await get_deployment_by_id(session, deployment_id)
-        
+
         if not deployment:
             console.print(f"[red]✗ Deployment #{deployment_id} not found[/red]")
             raise typer.Exit(1)
@@ -39,18 +39,15 @@ async def show_deployment_async(deployment_id: int):
             "Missing": ("[red]✗[/red]", "red"),
             "Unknown": ("[dim]?[/dim]", "dim"),
         }
-        
-        symbol, color = health_formats.get(
-            deployment.health_status,
-            ("[dim]?[/dim]", "dim")
-        )
+
+        symbol, color = health_formats.get(deployment.health_status, ("[dim]?[/dim]", "dim"))
         status_text = deployment.health_status or "Unknown"
         health_display = f"{symbol} [{color}]{status_text}[/{color}]"
 
         info = Table.grid(padding=(0, 2))
         info.add_column(style="bold cyan", justify="right")
         info.add_column(style="white")
-        
+
         info.add_row("ID:", str(deployment.id))
         info.add_row("App Name:", deployment.app_name)
         info.add_row("Namespace:", deployment.namespace)
@@ -61,7 +58,7 @@ async def show_deployment_async(deployment_id: int):
             info.add_row("Commit SHA:", git_commit.sha[:40])
             info.add_row("Author:", git_commit.author)
             info.add_row("Author Email:", git_commit.author_email or "unknown")
-            info.add_row("Message:", git_commit.commit_message.split('\n')[0][:80])
+            info.add_row("Message:", git_commit.commit_message.split("\n")[0][:80])
             info.add_row("Committed:", git_commit.committed_at.strftime("%Y-%m-%d %H:%M:%S UTC"))
 
             if git_commit.pr_number:
@@ -86,17 +83,14 @@ async def show_deployment_async(deployment_id: int):
             border_style="cyan",
             box=box.ROUNDED,
         )
-        
+
         console.print()
         console.print(panel)
         console.print()
 
 
 def show_command(
-    deployment_id: int = typer.Argument(
-        ...,
-        help="Deployment ID to display"
-    ),
+    deployment_id: int = typer.Argument(..., help="Deployment ID to display"),
 ):
     """Show detailed information about a specific deployment."""
     asyncio.run(show_deployment_async(deployment_id))

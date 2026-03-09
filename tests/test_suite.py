@@ -16,10 +16,10 @@ from gitops_audit.database.queries import (
 )
 from gitops_audit.analysis.metrics_analyzer import MetricsAnalyzer
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="function")
 async def db_session():
@@ -96,6 +96,7 @@ async def sample_snapshots(db_session, sample_deployment):
 # Database connection tests
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_database_connection(db_session):
     """Test that we can connect to the database."""
@@ -120,6 +121,7 @@ async def test_tables_exist(db_session):
 # ---------------------------------------------------------------------------
 # Query tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_get_deployment_by_id(db_session, sample_deployment):
@@ -185,6 +187,7 @@ async def test_get_apps_list(db_session, sample_deployment):
 # ---------------------------------------------------------------------------
 # MetricsAnalyzer unit tests
 # ---------------------------------------------------------------------------
+
 
 class TestCalculateChange:
     """Tests for MetricsAnalyzer.calculate_change."""
@@ -288,6 +291,7 @@ async def test_analyze_deployment_no_snapshots(db_session, sample_deployment):
 # PrometheusClient tests (mocked HTTP)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_prometheus_get_app_metrics_success():
     """Test Prometheus client parses successful metric response."""
@@ -370,6 +374,7 @@ async def test_prometheus_test_connection_failure():
 # ---------------------------------------------------------------------------
 # SlackClient tests (mocked HTTP)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_slack_disabled_when_no_webhook():

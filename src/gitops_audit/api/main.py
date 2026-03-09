@@ -28,8 +28,7 @@ from gitops_audit.integrations.prometheus import get_prometheus_client
 app = FastAPI(
     title="GitOps Audit API",
     description=(
-        "REST API for tracking ArgoCD deployments, correlating metrics, "
-        "and managing rollbacks."
+        "REST API for tracking ArgoCD deployments, correlating metrics, " "and managing rollbacks."
     ),
     version="0.1.0",
     docs_url="/docs",

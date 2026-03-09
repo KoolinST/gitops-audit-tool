@@ -61,15 +61,19 @@ async def rollback_deployment_async(deployment_id: int, reason: str, yes: bool):
         console.print(f"[cyan]→ Triggering rollback for {deployment.app_name}...[/cyan]")
 
         try:
-            patch = (
-                f'{{"operation": {{"sync": {{"revision": "{deployment.commit_sha}"}}}}}}'
-            )
+            patch = f'{{"operation": {{"sync": {{"revision": "{deployment.commit_sha}"}}}}}}'
             result = subprocess.run(
                 [
-                    "kubectl", "-n", "argocd",
-                    "patch", "application", deployment.app_name,
-                    "--type", "merge",
-                    "-p", patch,
+                    "kubectl",
+                    "-n",
+                    "argocd",
+                    "patch",
+                    "application",
+                    deployment.app_name,
+                    "--type",
+                    "merge",
+                    "-p",
+                    patch,
                 ],
                 capture_output=True,
                 text=True,
@@ -94,16 +98,10 @@ async def rollback_deployment_async(deployment_id: int, reason: str, yes: bool):
             console.print("[red]✗ kubectl not found — is it installed and in PATH?[/red]")
             raise typer.Exit(1)
 
-        await _record_rollback(
-            session, deployment_id, deployment.commit_sha, reason, success=True
-        )
+        await _record_rollback(session, deployment_id, deployment.commit_sha, reason, success=True)
 
-        console.print(
-            f"[green]✓ Rollback triggered successfully for {deployment.app_name}[/green]"
-        )
-        console.print(
-            f"[dim]ArgoCD is now syncing to commit {deployment.commit_sha[:8]}[/dim]"
-        )
+        console.print(f"[green]✓ Rollback triggered successfully for {deployment.app_name}[/green]")
+        console.print(f"[dim]ArgoCD is now syncing to commit {deployment.commit_sha[:8]}[/dim]")
         console.print()
         console.print(
             f"[dim]Run: gitops-audit show {deployment_id} for full deployment details[/dim]"
@@ -138,12 +136,14 @@ def rollback_command(
     ),
     reason: str = typer.Option(
         "",
-        "--reason", "-r",
+        "--reason",
+        "-r",
         help="Reason for rollback (optional)",
     ),
     yes: bool = typer.Option(
         False,
-        "--yes", "-y",
+        "--yes",
+        "-y",
         help="Skip confirmation prompt",
     ),
 ):

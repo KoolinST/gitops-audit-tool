@@ -10,11 +10,7 @@ from gitops_audit.config.settings import settings
 async def db_session():
     """Create a fresh database session for each test."""
     engine = create_async_engine(settings.database_url, echo=False)
-    async_session = async_sessionmaker(
-        engine,
-        class_=AsyncSession,
-        expire_on_commit=False
-    )
+    async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:
         yield session

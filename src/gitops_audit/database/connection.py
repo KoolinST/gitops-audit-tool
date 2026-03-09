@@ -15,6 +15,7 @@ def get_engine():
         pool_pre_ping=True,
     )
 
+
 engine = get_engine()
 
 AsyncSessionLocal = async_sessionmaker(
