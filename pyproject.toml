@@ -63,6 +63,7 @@ ruff = ">=0.14.14,<0.15.0"
 black = ">=26.1.0,<27.0.0"
 mypy = ">=1.19.1,<2.0.0"
 python-dotenv = ">=1.2.1,<2.0.0"
+pytest-cov = "^7.0.0"
 
 [tool.poetry.scripts]
 gitops-audit = "gitops_audit.cli.main:app"
