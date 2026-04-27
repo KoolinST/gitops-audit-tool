@@ -15,6 +15,8 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src/ ./src/
+COPY alembic/ ./alembic/
+COPY alembic.ini ./
 
 RUN printf '#!/usr/bin/env python\nimport sys\nfrom gitops_audit.cli.main import app\nsys.exit(app())\n' > /usr/local/bin/gitops-audit && \
     chmod +x /usr/local/bin/gitops-audit
