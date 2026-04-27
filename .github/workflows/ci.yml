@@ -24,7 +24,7 @@ jobs:
         run: pip install poetry==2.1.3
 
       - name: Install dependencies
-        run: poetry lock --no-update && poetry install --no-root
+        run: poetry install --no-root
 
       - name: Run Ruff (linting)
         run: poetry run ruff check .
@@ -74,7 +74,7 @@ jobs:
         run: pip install poetry==2.1.3
 
       - name: Install dependencies
-        run: poetry lock --no-update && poetry install --no-root
+        run: poetry install --no-root
 
       - name: Run migrations
         run: poetry run alembic upgrade head
