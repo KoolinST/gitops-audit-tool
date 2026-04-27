@@ -10,27 +10,13 @@ RUN apt-get update && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml README.md ./
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY src/ ./src/
 
-RUN pip install --upgrade pip && \
-    pip install \
-    typer \
-    rich \
-    fastapi \
-    "uvicorn[standard]" \
-    sqlalchemy \
-    alembic \
-    asyncpg \
-    httpx \
-    pydantic \
-    pydantic-settings \
-    kubernetes \
-    pygithub \
-    structlog \
-    prometheus-client \
-    psycopg2-binary \
-    greenlet
+RUN echo '#!/usr/bin/env python\nimport sys\nfrom gitops_audit.cli.main import app\nsys.exit(app())' > /usr/local/bin/gitops-audit && \
+    chmod +x /usr/local/bin/gitops-audit
 
 ENV PYTHONPATH=/app/src
 
