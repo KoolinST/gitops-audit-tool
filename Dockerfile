@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src/ ./src/
 
-RUN echo '#!/usr/bin/env python\nimport sys\nfrom gitops_audit.cli.main import app\nsys.exit(app())' > /usr/local/bin/gitops-audit && \
+RUN printf '#!/usr/bin/env python\nimport sys\nfrom gitops_audit.cli.main import app\nsys.exit(app())\n' > /usr/local/bin/gitops-audit && \
     chmod +x /usr/local/bin/gitops-audit
 
 ENV PYTHONPATH=/app/src
