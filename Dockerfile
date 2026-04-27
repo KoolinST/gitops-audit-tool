@@ -8,6 +8,7 @@ RUN apt-get update && \
     mv kubectl /usr/local/bin/kubectl && \
     apt-get remove -y curl && \
     apt-get autoremove -y && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
