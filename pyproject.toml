@@ -34,28 +34,6 @@ gitops-audit = "gitops_audit.cli.main:app"
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
-package-mode = false
-
-[tool.poetry.dependencies]
-python = ">=3.11.0,<4.0"
-typer = ">=0.21.1,<0.22.0"
-rich = ">=14.3.1,<15.0.0"
-fastapi = ">=0.128.0,<0.129.0"
-uvicorn = ">=0.40.0,<0.41.0"
-sqlalchemy = ">=2.0.46,<3.0.0"
-alembic = ">=1.18.1,<2.0.0"
-asyncpg = ">=0.31.0,<0.32.0"
-httpx = ">=0.28.1,<0.29.0"
-pydantic = ">=2.12.5,<3.0.0"
-pydantic-settings = ">=2.12.0,<3.0.0"
-kubernetes = ">=35.0.0,<36.0.0"
-pygithub = ">=2.8.1,<3.0.0"
-structlog = ">=25.5.0,<26.0.0"
-prometheus-client = ">=0.24.1,<0.25.0"
-psycopg2-binary = ">=2.9.11,<3.0.0"
-greenlet = ">=3.3.1,<4.0.0"
-
 [tool.poetry.group.dev.dependencies]
 pytest = ">=9.0.2,<10.0.0"
 pytest-asyncio = ">=1.3.0,<2.0.0"
@@ -64,9 +42,6 @@ black = ">=26.1.0,<27.0.0"
 mypy = ">=1.19.1,<2.0.0"
 python-dotenv = ">=1.2.1,<2.0.0"
 pytest-cov = "^7.0.0"
-
-[tool.poetry.scripts]
-gitops-audit = "gitops_audit.cli.main:app"
 
 [tool.ruff]
 src = ["src", "tests"]
