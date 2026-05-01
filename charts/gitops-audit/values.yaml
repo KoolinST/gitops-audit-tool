@@ -2,7 +2,7 @@
 
 image:
   repository: koolinst/gitops-audit
-  tag: "1c359254bb4811ab7dd259fa321bd64409ff0c7b"
+  tag: "f817bb349b12d6e14e0c486e64b3781117ca3369"
   pullPolicy: IfNotPresent
 
 watcher:
