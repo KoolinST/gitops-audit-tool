@@ -1,5 +1,3 @@
-import os
-
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -12,14 +10,14 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-from gitops_audit.database.models import Base  # noqa: E402  # noqa: E402
+from gitops_audit.config.settings import settings  # noqa: E402
+from gitops_audit.database.models import Base  # noqa: E402
 
 target_metadata = Base.metadata
 
 
 def get_url():
-    url = os.getenv("DATABASE_URL", "")
-    return url.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
+    return settings.database_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
 
 
 def run_migrations_offline() -> None:

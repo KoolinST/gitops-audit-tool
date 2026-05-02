@@ -1,7 +1,8 @@
 """Database models for GitOps audit system."""
 
 from datetime import datetime
-from sqlalchemy import String, DateTime, Integer, Float, Text, Boolean
+
+from sqlalchemy import String, DateTime, Integer, Float, Text, Boolean, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -24,7 +25,6 @@ class Deployment(Base):
     deployed_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
     deployed_by: Mapped[str] = mapped_column(String(255), nullable=True)
 
-    # ArgoCD specific
     argocd_revision: Mapped[str] = mapped_column(String(255), nullable=True)
     sync_status: Mapped[str] = mapped_column(String(50), nullable=True)
     health_status: Mapped[str] = mapped_column(String(50), nullable=True)
@@ -46,7 +46,6 @@ class GitCommit(Base):
     commit_message: Mapped[str] = mapped_column(Text, nullable=False)
     committed_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
-    # GitHub/GitLab specific
     pr_number: Mapped[int] = mapped_column(Integer, nullable=True)
     pr_approved_by: Mapped[str] = mapped_column(String(255), nullable=True)
     pr_url: Mapped[str] = mapped_column(String(512), nullable=True)
@@ -60,11 +59,15 @@ class MetricsSnapshot(Base):
     __tablename__ = "metrics_snapshots"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    deployment_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    deployment_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("deployments.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     snapshot_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     snapshot_type: Mapped[str] = mapped_column(String(20), nullable=False)  # 'before' or 'after'
 
-    # Metrics
     error_rate: Mapped[float] = mapped_column(Float, nullable=True)
     latency_p50: Mapped[float] = mapped_column(Float, nullable=True)
     latency_p95: Mapped[float] = mapped_column(Float, nullable=True)
@@ -82,7 +85,12 @@ class Rollback(Base):
     __tablename__ = "rollbacks"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    deployment_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    deployment_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("deployments.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     rolled_back_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     rolled_back_by: Mapped[str] = mapped_column(String(255), nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=True)
