@@ -77,7 +77,7 @@ poetry install
 # Copy and configure environment
 cp .env.example .env
 
-# Start PostgreSQL
+# Start PostgreSQL (host port 5433 → container 5432, to avoid conflicts with other local Postgres instances)
 docker-compose up -d postgres
 
 # Run database migrations
@@ -109,7 +109,7 @@ kubectl port-forward svc/gitops-audit-api 8000:8000 -n gitops-audit
 
 ### Environment Variables
 ```env
-DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/gitops_audit
+DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5433/gitops_audit
 PROMETHEUS_URL=http://localhost:9090
 GITHUB_TOKEN=your_github_token        # optional — enables commit/PR metadata
 SLACK_WEBHOOK_URL=https://hooks.slack.com/...  # optional — enables alerts
